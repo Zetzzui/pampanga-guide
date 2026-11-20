@@ -17,7 +17,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
   static const _cards = [
     (
       kapampangan: 'Manyaman!',
-      pronunciation: 'mah-nya-MAH-nan',
+      pronunciation: 'mah-nya-man',
       english: 'Delicious',
     ),
     (

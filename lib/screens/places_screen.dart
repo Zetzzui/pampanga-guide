@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../data/mock_data.dart';
+import '../services/places_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/ui_kit.dart';
@@ -19,7 +20,36 @@ class PlacesScreen extends StatefulWidget {
 class _PlacesScreenState extends State<PlacesScreen> {
   int _filter = 0;
 
+  // TODO: make the chips filter the list in the Location step
+  // ("Nearby" needs the user's location).
   static const _filters = ['Nearby', 'Sizzle', 'Heritage'];
+
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  /// The spots request. Replaced on Retry to load again.
+  late Future<PlacesResult> _placesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _placesFuture = PlacesService.instance.fetchPlaces();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _reload() {
+    setState(() => _placesFuture = PlacesService.instance.fetchPlaces());
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _query = '');
+  }
 
   void _openPlace(Place place) {
     Navigator.of(context).push(
@@ -62,6 +92,9 @@ class _PlacesScreenState extends State<PlacesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   TextField(
+                    controller: _searchController,
+                    onChanged: (value) => setState(() => _query = value),
+                    textInputAction: TextInputAction.search,
                     decoration: InputDecoration(
                       hintText: 'Search food or city',
                       prefixIcon: const Icon(Icons.search, size: 20),
@@ -91,28 +124,32 @@ class _PlacesScreenState extends State<PlacesScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'A taste of Pampanga',
-                        style: AppText.small.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.navy,
-                        ),
-                      ),
-                      Text(
-                        '${mockPlaces.length} places',
-                        style: AppText.small.copyWith(color: AppColors.muted),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ...mockPlaces.map(
-                    (place) => _PlaceCard(
-                      place: place,
-                      onTap: () => _openPlace(place),
-                    ),
+                  FutureBuilder<PlacesResult>(
+                    future: _placesFuture,
+                    builder: (context, snapshot) {
+                      // Loading state.
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const LoadingState(label: 'Loading places');
+                      }
+                      // Error and offline (nothing cached) states.
+                      if (snapshot.hasError) {
+                        final error = snapshot.error;
+                        final offline =
+                            error is PlacesException && error.isOffline;
+                        return StatusMessage(
+                          icon: offline ? Icons.wifi_off : Icons.error_outline,
+                          title: offline
+                              ? "You're offline"
+                              : 'Something went wrong',
+                          message: error is PlacesException
+                              ? error.message
+                              : 'Could not load places. Please try again.',
+                          actionLabel: 'Retry',
+                          onAction: _reload,
+                        );
+                      }
+                      return _buildPlaces(snapshot.data!);
+                    },
                   ),
                 ],
               ),
@@ -120,6 +157,63 @@ class _PlacesScreenState extends State<PlacesScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// The list of spots, or the empty / no-results state.
+  Widget _buildPlaces(PlacesResult result) {
+    // Empty state: Firestore has no spots yet.
+    if (result.places.isEmpty) {
+      return StatusMessage(
+        icon: Icons.place_outlined,
+        title: 'No places yet',
+        message: 'New places will show up here soon.',
+        actionLabel: 'Retry',
+        onAction: _reload,
+      );
+    }
+
+    final shown = result.places.where((p) => p.matches(_query)).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (result.isOffline) OfflineBanner(onRetry: _reload),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'A taste of Pampanga',
+              style: AppText.small.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.navy,
+              ),
+            ),
+            Text(
+              shown.length == 1 ? '1 place' : '${shown.length} places',
+              style: AppText.small.copyWith(color: AppColors.muted),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // No Results state (workflow.md): search matched nothing.
+        if (shown.isEmpty)
+          StatusMessage(
+            icon: Icons.search_off,
+            title: 'No results',
+            message: 'No places match "${_query.trim()}". Try another food '
+                'or city.',
+            actionLabel: 'Clear search',
+            onAction: _clearSearch,
+          )
+        else
+          ...shown.map(
+            (place) => _PlaceCard(
+              place: place,
+              onTap: () => _openPlace(place),
+            ),
+          ),
+      ],
     );
   }
 }

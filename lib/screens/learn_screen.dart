@@ -124,7 +124,7 @@ class _LearnScreenState extends State<LearnScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'mah-nya-MAH-nan',
+                      'mah-nya-man',
                       style: AppText.small.copyWith(color: Colors.white70),
                     ),
                     const SizedBox(height: 16),

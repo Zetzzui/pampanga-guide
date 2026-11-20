@@ -192,6 +192,134 @@ class FilterPill extends StatelessWidget {
   }
 }
 
+/// Centered spinner shown while a screen loads its data.
+class LoadingState extends StatelessWidget {
+  const LoadingState({super.key, required this.label});
+
+  /// Read aloud by screen readers, e.g. "Loading places".
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Center(
+        child: Semantics(
+          label: label,
+          child: const CircularProgressIndicator(color: AppColors.navy),
+        ),
+      ),
+    );
+  }
+}
+
+/// Icon, title, message, and an optional button.
+/// Used for error, offline, empty, and no-results states on every screen.
+class StatusMessage extends StatelessWidget {
+  const StatusMessage({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
+      child: Column(
+        children: [
+          Icon(icon, size: 40, color: AppColors.navy),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: AppColors.navy,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            // AppColors.grey passes WCAG AA on the cream background.
+            style: const TextStyle(fontSize: 14, color: AppColors.grey),
+          ),
+          if (actionLabel != null && onAction != null) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 48, // 48dp touch target
+              child: FilledButton(
+                onPressed: onAction,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.navy,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(actionLabel!),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Banner shown when data comes from the phone's cache (no internet).
+class OfflineBanner extends StatelessWidget {
+  const OfflineBanner({super.key, required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(left: 12),
+      decoration: BoxDecoration(
+        color: AppColors.blueTint,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.wifi_off, size: 18, color: AppColors.navy),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              "You're offline. Showing saved data.",
+              style: TextStyle(fontSize: 13, color: AppColors.navy),
+            ),
+          ),
+          SizedBox(
+            height: 48, // 48dp touch target
+            child: TextButton(
+              onPressed: onRetry,
+              style: TextButton.styleFrom(foregroundColor: AppColors.navy),
+              child: const Text(
+                'Retry',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.index, required this.onTap});
 
