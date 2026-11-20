@@ -3,29 +3,29 @@ import 'package:material_ui/material_ui.dart';
 import '../data/mock_data.dart';
 
 /// In-memory saved places shared by Places, Place Details, and Saved.
-/// TODO: replace with the user's saved spots in Firestore.
+/// Places are stored by their Firestore id.
+/// TODO: replace with the user's saved spots in Firestore (Saved step).
 class SavedStore extends ChangeNotifier {
   SavedStore._();
 
   static final instance = SavedStore._();
 
-  final Set<String> _names = {};
+  final Map<String, Place> _saved = {};
 
-  bool isSaved(Place place) => _names.contains(place.name);
+  bool isSaved(Place place) => _saved.containsKey(place.id);
 
-  List<Place> get places =>
-      mockPlaces.where((place) => _names.contains(place.name)).toList();
+  List<Place> get places => _saved.values.toList();
 
-  int get count => _names.length;
+  int get count => _saved.length;
 
   void toggle(Place place) {
-    if (!_names.remove(place.name)) {
-      _names.add(place.name);
+    if (_saved.remove(place.id) == null) {
+      _saved[place.id] = place;
     }
     notifyListeners();
   }
 
   void remove(Place place) {
-    if (_names.remove(place.name)) notifyListeners();
+    if (_saved.remove(place.id) != null) notifyListeners();
   }
 }

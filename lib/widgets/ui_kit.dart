@@ -3,6 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import '../theme/app_colors.dart';
 
 /// Reusable LOCALINGO widgets used by more than one screen.
+///
+/// Colours come from `AppPalette.of(context)`, so every widget here works in
+/// both the light and dark theme.
 class FoodIllustration extends StatelessWidget {
   const FoodIllustration({super.key, this.height = 280});
 
@@ -58,6 +61,7 @@ class FoodIllustration extends StatelessWidget {
   }
 }
 
+/// Main action button (Figma: accent fill, white text).
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
@@ -72,14 +76,15 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
     return SizedBox(
       height: 52,
       width: double.infinity,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.navy,
-          foregroundColor: Colors.white,
+          backgroundColor: c.accent,
+          foregroundColor: c.onAccent,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
@@ -98,6 +103,7 @@ class PrimaryButton extends StatelessWidget {
   }
 }
 
+/// Second action button (Figma: soft fill, ink text).
 class SecondaryButton extends StatelessWidget {
   const SecondaryButton({
     super.key,
@@ -110,14 +116,15 @@ class SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
     return SizedBox(
       height: 52,
       width: double.infinity,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.card,
-          foregroundColor: AppColors.navy,
+          backgroundColor: c.soft,
+          foregroundColor: c.ink,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
@@ -127,6 +134,7 @@ class SecondaryButton extends StatelessWidget {
   }
 }
 
+/// Onboarding page indicator.
 class PageDots extends StatelessWidget {
   const PageDots({super.key, required this.count, required this.index});
 
@@ -135,18 +143,22 @@ class PageDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(
-        count,
-        (i) => AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: i == index ? 18 : 6,
-          height: 6,
-          decoration: BoxDecoration(
-            color: i == index ? AppColors.navy : AppColors.line,
-            borderRadius: BorderRadius.circular(3),
+    final c = AppPalette.of(context);
+    return Semantics(
+      label: 'Page ${index + 1} of $count',
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          count,
+          (i) => AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            width: i == index ? 18 : 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: i == index ? c.accent : c.line,
+              borderRadius: BorderRadius.circular(3),
+            ),
           ),
         ),
       ),
@@ -154,6 +166,8 @@ class PageDots extends StatelessWidget {
   }
 }
 
+/// Filter chip (Figma: accent when selected, outlined surface otherwise).
+/// The visible pill is 36dp tall inside a 48dp touch target.
 class FilterPill extends StatelessWidget {
   const FilterPill({
     super.key,
@@ -168,23 +182,34 @@ class FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 40),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.navy : Colors.transparent,
-          border: Border.all(color: selected ? AppColors.navy : AppColors.line),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: selected ? Colors.white : AppColors.navy,
+    final c = AppPalette.of(context);
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          height: 48, // 48dp touch target
+          child: Center(
+            child: Container(
+              height: 44, // Figma chip height
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected ? c.accent : c.surface,
+                border: Border.all(color: selected ? c.accent : c.line),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: selected ? c.onAccent : c.ink,
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -201,12 +226,13 @@ class LoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 48),
       child: Center(
         child: Semantics(
           label: label,
-          child: const CircularProgressIndicator(color: AppColors.navy),
+          child: CircularProgressIndicator(color: c.accent),
         ),
       ),
     );
@@ -233,27 +259,27 @@ class StatusMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
       child: Column(
         children: [
-          Icon(icon, size: 40, color: AppColors.navy),
+          Icon(icon, size: 40, color: c.ink),
           const SizedBox(height: 12),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
-              color: AppColors.navy,
+              color: c.ink,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             message,
             textAlign: TextAlign.center,
-            // AppColors.grey passes WCAG AA on the cream background.
-            style: const TextStyle(fontSize: 14, color: AppColors.grey),
+            style: TextStyle(fontSize: 14, color: c.muted),
           ),
           if (actionLabel != null && onAction != null) ...[
             const SizedBox(height: 16),
@@ -262,8 +288,8 @@ class StatusMessage extends StatelessWidget {
               child: FilledButton(
                 onPressed: onAction,
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.navy,
-                  foregroundColor: Colors.white,
+                  backgroundColor: c.accent,
+                  foregroundColor: c.onAccent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -286,28 +312,29 @@ class OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.only(left: 12),
       decoration: BoxDecoration(
-        color: AppColors.blueTint,
+        color: c.soft,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          const Icon(Icons.wifi_off, size: 18, color: AppColors.navy),
+          Icon(Icons.wifi_off, size: 18, color: c.ink),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
               "You're offline. Showing saved data.",
-              style: TextStyle(fontSize: 13, color: AppColors.navy),
+              style: TextStyle(fontSize: 13, color: c.ink),
             ),
           ),
           SizedBox(
             height: 48, // 48dp touch target
             child: TextButton(
               onPressed: onRetry,
-              style: TextButton.styleFrom(foregroundColor: AppColors.navy),
+              style: TextButton.styleFrom(foregroundColor: c.ink),
               child: const Text(
                 'Retry',
                 style: TextStyle(fontWeight: FontWeight.w700),
@@ -320,6 +347,8 @@ class OfflineBanner extends StatelessWidget {
   }
 }
 
+/// Bottom tabs: Places, Learn, Quiz, Saved.
+/// Figma: the selected tab sits on a soft rounded square.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.index, required this.onTap});
 
@@ -329,48 +358,68 @@ class AppBottomNav extends StatelessWidget {
   static const _items = [
     ('Places', Icons.place_outlined, Icons.place),
     ('Learn', Icons.menu_book_outlined, Icons.menu_book),
-    ('Quiz', Icons.quiz_outlined, Icons.quiz),
-    ('Saved', Icons.bookmark_border, Icons.bookmark),
+    ('Quiz', Icons.emoji_events_outlined, Icons.emoji_events), // trophy
+    ('Saved', Icons.star_border, Icons.star),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.cream,
-        border: Border(top: BorderSide(color: AppColors.line)),
+      decoration: BoxDecoration(
+        color: c.surface, // Figma: white bar with a thin top line
+        border: Border(top: BorderSide(color: c.line)),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
+          height: 68,
           child: Row(
             children: List.generate(_items.length, (i) {
               final item = _items[i];
               final selected = i == index;
               return Expanded(
-                child: InkWell(
-                  onTap: () => onTap(i),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        selected ? item.$3 : item.$2,
-                        size: 22,
-                        color: selected ? AppColors.navy : AppColors.muted,
+                child: Semantics(
+                  button: true,
+                  selected: selected,
+                  label: '${item.$1} tab',
+                  excludeSemantics: true,
+                  child: InkWell(
+                    onTap: () => onTap(i),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        item.$1,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: selected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: selected ? AppColors.navy : AppColors.muted,
+                      // Figma: selected tab = wide soft rounded rectangle.
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: selected ? c.soft : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              selected ? item.$3 : item.$2,
+                              size: 22,
+                              color: selected ? c.ink : c.muted,
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              item.$1,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected ? c.ink : c.muted,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               );

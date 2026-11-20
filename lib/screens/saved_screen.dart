@@ -3,9 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import '../data/mock_data.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
-import '../widgets/ui_kit.dart';
-import 'learn_screen.dart';
-import 'places_screen.dart';
 import 'restaurant_detail_screen.dart';
 
 /// Saved — places the user bookmarked, with an empty state.
@@ -20,30 +17,11 @@ class _SavedScreenState extends State<SavedScreen> {
   // TODO: replace with the user's saved spots from Firestore.
   final List<Place> _saved = [mockPlaces.first];
 
-  void _onNav(int index) {
-    if (index == 3) return;
-    if (index == 0) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const PlacesScreen()),
-      );
-      return;
-    }
-    if (index == 1) {
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const LearnScreen()));
-      return;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Quiz is available from Learn.')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    // The bottom nav lives in MainShell, so it stays still between tabs.
     return Scaffold(
-      backgroundColor: AppColors.cream,
-      bottomNavigationBar: AppBottomNav(index: 3, onTap: _onNav),
+      backgroundColor: AppPalette.of(context).background,
       body: SafeArea(
         bottom: false,
         child: ListView(
@@ -51,17 +29,17 @@ class _SavedScreenState extends State<SavedScreen> {
           children: [
             Text(
               'YOUR FOOD TRAIL',
-              style: AppText.label.copyWith(color: AppColors.muted),
+              style: AppText.label.copyWith(color: AppPalette.of(context).muted),
             ),
             const SizedBox(height: 10),
             Text(
               'Saved places',
-              style: AppText.h1.copyWith(color: AppColors.navy),
+              style: AppText.h1.copyWith(color: AppPalette.of(context).ink),
             ),
             const SizedBox(height: 8),
             Text(
               'Keep the tables you want to come back to.',
-              style: AppText.body.copyWith(color: AppColors.grey),
+              style: AppText.body.copyWith(color: AppPalette.of(context).muted),
             ),
             const SizedBox(height: 24),
             if (_saved.isEmpty)
@@ -103,8 +81,8 @@ class _SavedCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.55),
-        border: Border.all(color: AppColors.line),
+        color: AppPalette.of(context).surface,
+        border: Border.all(color: AppPalette.of(context).line),
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
@@ -120,18 +98,18 @@ class _SavedCard extends StatelessWidget {
                   children: [
                     Text(
                       place.name,
-                      style: AppText.h3.copyWith(color: AppColors.navy),
+                      style: AppText.h3.copyWith(color: AppPalette.of(context).ink),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '${place.city} · Pampanga',
-                      style: AppText.small.copyWith(color: AppColors.muted),
+                      style: AppText.small.copyWith(color: AppPalette.of(context).muted),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       place.phrase.kapampangan,
                       style: AppText.small.copyWith(
-                        color: AppColors.grey,
+                        color: AppPalette.of(context).muted,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -141,9 +119,9 @@ class _SavedCard extends StatelessWidget {
               IconButton(
                 onPressed: onRemove,
                 tooltip: 'Remove',
-                icon: const Icon(
+                icon: Icon(
                   Icons.bookmark,
-                  color: AppColors.navy,
+                  color: AppPalette.of(context).ink,
                   size: 22,
                 ),
               ),
@@ -161,22 +139,22 @@ class _EmptyState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppPalette.of(context).soft,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          const Icon(Icons.bookmark_border, size: 34, color: AppColors.navy),
+          Icon(Icons.bookmark_border, size: 34, color: AppPalette.of(context).ink),
           const SizedBox(height: 12),
           Text(
             'Nothing saved yet',
-            style: AppText.h3.copyWith(color: AppColors.navy),
+            style: AppText.h3.copyWith(color: AppPalette.of(context).ink),
           ),
           const SizedBox(height: 6),
           Text(
             'Tap the bookmark on a place to keep it here.',
             textAlign: TextAlign.center,
-            style: AppText.small.copyWith(color: AppColors.grey),
+            style: AppText.small.copyWith(color: AppPalette.of(context).muted),
           ),
         ],
       ),

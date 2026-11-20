@@ -55,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppPalette.of(context).background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
@@ -69,14 +69,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     style: AppText.small.copyWith(
                       letterSpacing: 2,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.navy,
+                      color: AppPalette.of(context).ink,
                     ),
                   ),
                   TextButton(
                     onPressed: _finish,
-                    child: const Text(
+                    child: Text(
                       'Skip',
-                      style: TextStyle(color: AppColors.navy),
+                      style: TextStyle(color: AppPalette.of(context).ink),
                     ),
                   ),
                 ],
@@ -118,12 +118,12 @@ class _PageContent extends StatelessWidget {
           const SizedBox(height: 28),
           Text(
             page.step,
-            style: AppText.label.copyWith(color: AppColors.muted),
+            style: AppText.label.copyWith(color: AppPalette.of(context).muted),
           ),
           const SizedBox(height: 10),
-          Text(page.title, style: AppText.h1.copyWith(color: AppColors.navy)),
+          Text(page.title, style: AppText.h1.copyWith(color: AppPalette.of(context).ink)),
           const SizedBox(height: 12),
-          Text(page.body, style: AppText.body.copyWith(color: AppColors.grey)),
+          Text(page.body, style: AppText.body.copyWith(color: AppPalette.of(context).muted)),
         ],
       ),
     );

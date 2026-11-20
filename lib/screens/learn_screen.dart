@@ -4,9 +4,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/ui_kit.dart';
 import 'flashcard_screen.dart';
-import 'places_screen.dart';
-import 'quiz_screen.dart';
-import 'saved_screen.dart';
 
 class LearnScreen extends StatefulWidget {
   const LearnScreen({super.key});
@@ -21,29 +18,11 @@ class _LearnScreenState extends State<LearnScreen> {
 
   static const _categories = ['Food', 'Greetings'];
 
-  void _onNav(int index) {
-    if (index == 1) return;
-    if (index == 0) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const PlacesScreen()),
-      );
-      return;
-    }
-    if (index == 2) {
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => const QuizScreen()));
-      return;
-    }
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const SavedScreen()));
-  }
-
   @override
   Widget build(BuildContext context) {
+    // The bottom nav lives in MainShell, so it stays still between tabs.
     return Scaffold(
-      backgroundColor: AppColors.cream,
-      bottomNavigationBar: AppBottomNav(index: 1, onTap: _onNav),
+      backgroundColor: AppPalette.of(context).background,
       body: SafeArea(
         bottom: false,
         child: ListView(
@@ -51,12 +30,12 @@ class _LearnScreenState extends State<LearnScreen> {
           children: [
             Text(
               'A LITTLE EVERY DAY',
-              style: AppText.label.copyWith(color: AppColors.muted),
+              style: AppText.label.copyWith(color: AppPalette.of(context).muted),
             ),
             const SizedBox(height: 10),
             Text(
               'Learn Kapampangan',
-              style: AppText.h1.copyWith(color: AppColors.navy),
+              style: AppText.h1.copyWith(color: AppPalette.of(context).ink),
             ),
             const SizedBox(height: 16),
             Row(
@@ -80,22 +59,22 @@ class _LearnScreenState extends State<LearnScreen> {
               children: [
                 Text(
                   '1 of 8 phrases',
-                  style: AppText.small.copyWith(color: AppColors.muted),
+                  style: AppText.small.copyWith(color: AppPalette.of(context).muted),
                 ),
                 Text(
                   '13%',
-                  style: AppText.small.copyWith(color: AppColors.muted),
+                  style: AppText.small.copyWith(color: AppPalette.of(context).muted),
                 ),
               ],
             ),
             const SizedBox(height: 6),
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
-              child: const LinearProgressIndicator(
+              child: LinearProgressIndicator(
                 value: 0.13,
                 minHeight: 5,
-                backgroundColor: AppColors.line,
-                valueColor: AlwaysStoppedAnimation(AppColors.navy),
+                backgroundColor: AppPalette.of(context).line,
+                valueColor: AlwaysStoppedAnimation(AppPalette.of(context).ink),
               ),
             ),
             const SizedBox(height: 22),
@@ -104,7 +83,7 @@ class _LearnScreenState extends State<LearnScreen> {
               child: Container(
                 padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
                 decoration: BoxDecoration(
-                  color: AppColors.navy,
+                  color: AppPalette.of(context).heroSurface,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -112,7 +91,7 @@ class _LearnScreenState extends State<LearnScreen> {
                     Text(
                       'AT THE TABLE',
                       style: AppText.label.copyWith(
-                        color: AppColors.yellow,
+                        color: AppPalette.of(context).highlight,
                         fontSize: 10,
                       ),
                     ),
@@ -120,7 +99,7 @@ class _LearnScreenState extends State<LearnScreen> {
                     Text(
                       'Manyaman!',
                       textAlign: TextAlign.center,
-                      style: AppText.display.copyWith(color: AppColors.yellow),
+                      style: AppText.display.copyWith(color: AppPalette.of(context).highlight),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -154,8 +133,8 @@ class _LearnScreenState extends State<LearnScreen> {
                 icon: const Icon(Icons.style_outlined, size: 18),
                 label: const Text('Practice with flashcards'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.navy,
-                  side: const BorderSide(color: AppColors.line),
+                  foregroundColor: AppPalette.of(context).ink,
+                  side: BorderSide(color: AppPalette.of(context).line),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -166,7 +145,7 @@ class _LearnScreenState extends State<LearnScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.yellow,
+                color: AppPalette.of(context).highlight,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -176,7 +155,7 @@ class _LearnScreenState extends State<LearnScreen> {
                     'Try it locally',
                     style: AppText.small.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.navy,
+                      color: AppPalette.of(context).onHighlight,
                     ),
                   ),
                   const SizedBox(height: 4),

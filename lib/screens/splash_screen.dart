@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../services/auth_service.dart';
 import 'onboarding_screen.dart';
-import 'places_screen.dart';
+import 'main_shell.dart';
 
 /// Brand colours for the splash screen.
 /// Keep them here until the full design-token set is added.
@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) =>
-            loggedIn ? const PlacesScreen() : const OnboardingScreen(),
+            loggedIn ? const MainShell() : const OnboardingScreen(),
       ),
     );
   }

@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/ui_kit.dart';
-import 'quiz_screen.dart';
+import 'main_shell.dart';
 
 /// Flashcard — one phrase at a time, with reveal and next/previous.
 class FlashcardScreen extends StatefulWidget {
@@ -54,7 +54,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     final card = _cards[_index];
 
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppPalette.of(context).background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
@@ -66,11 +66,11 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: AppColors.navy),
+                    icon: Icon(Icons.close, color: AppPalette.of(context).ink),
                   ),
                   Text(
                     '${_index + 1} of ${_cards.length}',
-                    style: AppText.small.copyWith(color: AppColors.muted),
+                    style: AppText.small.copyWith(color: AppPalette.of(context).muted),
                   ),
                   const SizedBox(width: 48),
                 ],
@@ -79,7 +79,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
               Text(
                 'FLASHCARD',
                 textAlign: TextAlign.center,
-                style: AppText.label.copyWith(color: AppColors.muted),
+                style: AppText.label.copyWith(color: AppPalette.of(context).muted),
               ),
               const SizedBox(height: 20),
               Expanded(
@@ -88,7 +88,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppColors.navy,
+                      color: AppPalette.of(context).heroSurface,
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Column(
@@ -97,7 +97,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                         Text(
                           'AT THE TABLE',
                           style: AppText.label.copyWith(
-                            color: AppColors.yellow,
+                            color: AppPalette.of(context).highlight,
                             fontSize: 10,
                           ),
                         ),
@@ -106,7 +106,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                           card.kapampangan,
                           textAlign: TextAlign.center,
                           style: AppText.display.copyWith(
-                            color: AppColors.yellow,
+                            color: AppPalette.of(context).highlight,
                             fontSize: 38,
                           ),
                         ),
@@ -155,14 +155,11 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
               ),
               const SizedBox(height: 10),
               TextButton.icon(
-                onPressed: () {
-                  Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => const QuizScreen()));
-                },
-                icon: const Icon(Icons.quiz_outlined, size: 18),
+                // Close the flashcards and open the Quiz tab.
+                onPressed: () => MainShell.goTo(context, MainShell.quiz),
+                icon: const Icon(Icons.emoji_events_outlined, size: 18),
                 label: const Text('Take the quiz'),
-                style: TextButton.styleFrom(foregroundColor: AppColors.navy),
+                style: TextButton.styleFrom(foregroundColor: AppPalette.of(context).ink),
               ),
             ],
           ),

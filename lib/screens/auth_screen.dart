@@ -126,7 +126,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: AppPalette.of(context).background,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
@@ -136,20 +136,20 @@ class _AuthScreenState extends State<AuthScreen> {
               style: AppText.small.copyWith(
                 letterSpacing: 2,
                 fontWeight: FontWeight.w600,
-                color: AppColors.navy,
+                color: AppPalette.of(context).ink,
               ),
             ),
             const SizedBox(height: 26),
             Text(
               _isLogin ? 'Welcome back.' : 'Join the table.',
-              style: AppText.h1.copyWith(color: AppColors.navy),
+              style: AppText.h1.copyWith(color: AppPalette.of(context).ink),
             ),
             const SizedBox(height: 8),
             Text(
               _isLogin
                   ? 'Log in to pick up your saved places and lessons.'
                   : 'Create an account to save places and track your streak.',
-              style: AppText.body.copyWith(color: AppColors.grey),
+              style: AppText.body.copyWith(color: AppPalette.of(context).muted),
             ),
             const SizedBox(height: 24),
             _SegmentToggle(
@@ -190,7 +190,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
                   size: 20,
-                  color: AppColors.muted,
+                  color: AppPalette.of(context).muted,
                 ),
               ),
             ),
@@ -202,7 +202,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   onPressed: _loading ? null : _resetPassword,
                   child: Text(
                     'Forgot password?',
-                    style: AppText.small.copyWith(color: AppColors.navy),
+                    style: AppText.small.copyWith(color: AppPalette.of(context).ink),
                   ),
                 ),
               ),
@@ -227,15 +227,15 @@ class _AuthScreenState extends State<AuthScreen> {
             const SizedBox(height: 18),
             Row(
               children: [
-                const Expanded(child: Divider(color: AppColors.line)),
+                Expanded(child: Divider(color: AppPalette.of(context).line)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
                     'or',
-                    style: AppText.small.copyWith(color: AppColors.muted),
+                    style: AppText.small.copyWith(color: AppPalette.of(context).muted),
                   ),
                 ),
-                const Expanded(child: Divider(color: AppColors.line)),
+                Expanded(child: Divider(color: AppPalette.of(context).line)),
               ],
             ),
             const SizedBox(height: 18),
@@ -252,14 +252,14 @@ class _AuthScreenState extends State<AuthScreen> {
               children: [
                 Text(
                   _isLogin ? 'New here? ' : 'Already have an account? ',
-                  style: AppText.small.copyWith(color: AppColors.grey),
+                  style: AppText.small.copyWith(color: AppPalette.of(context).muted),
                 ),
                 GestureDetector(
                   onTap: () => _setMode(!_isLogin),
                   child: Text(
                     _isLogin ? 'Create an account' : 'Log in',
                     style: AppText.small.copyWith(
-                      color: AppColors.navy,
+                      color: AppPalette.of(context).ink,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -284,7 +284,7 @@ class _SegmentToggle extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppPalette.of(context).soft,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -329,7 +329,7 @@ class _Segment extends StatelessWidget {
         height: 44,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? AppColors.navy : Colors.transparent,
+          color: selected ? AppPalette.of(context).accent : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -337,7 +337,7 @@ class _Segment extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: selected ? Colors.white : AppColors.grey,
+            color: selected ? AppPalette.of(context).onAccent : AppPalette.of(context).muted,
           ),
         ),
       ),
@@ -356,7 +356,7 @@ class _FieldLabel extends StatelessWidget {
       text,
       style: AppText.small.copyWith(
         fontWeight: FontWeight.w600,
-        color: AppColors.navy,
+        color: AppPalette.of(context).ink,
       ),
     );
   }
@@ -385,26 +385,26 @@ class _TextField extends StatelessWidget {
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
-      style: const TextStyle(fontSize: 14, color: AppColors.navy),
+      style: TextStyle(fontSize: 14, color: AppPalette.of(context).ink),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(fontSize: 14, color: AppColors.muted),
-        prefixIcon: Icon(icon, size: 20, color: AppColors.muted),
+        hintStyle: TextStyle(fontSize: 14, color: AppPalette.of(context).muted),
+        prefixIcon: Icon(icon, size: 20, color: AppPalette.of(context).muted),
         suffixIcon: trailing,
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.7),
+        fillColor: AppPalette.of(context).surface,
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.line),
+          borderSide: BorderSide(color: AppPalette.of(context).line),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.line),
+          borderSide: BorderSide(color: AppPalette.of(context).line),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.navy),
+          borderSide: BorderSide(color: AppPalette.of(context).ink),
         ),
       ),
     );

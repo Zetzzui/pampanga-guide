@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../data/mock_data.dart';
 import 'auth_service.dart';
+import 'firestore_db.dart';
 
 /// What the Places screen gets back from [PlacesService.fetchPlaces].
 class PlacesResult {
@@ -43,7 +44,7 @@ class PlacesService {
   static const _timeout = Duration(seconds: 10);
 
   CollectionReference<Map<String, dynamic>> get _spots =>
-      FirebaseFirestore.instance.collection('spots');
+      appFirestore.collection('spots');
 
   /// Loads every spot, sorted by name.
   ///
@@ -58,6 +59,13 @@ class PlacesService {
       final places = snapshot.docs
           .map((doc) => Place.fromMap(doc.id, doc.data()))
           .toList();
+      // Offline with nothing cached: show the offline error, not "No places".
+      if (snapshot.metadata.isFromCache && places.isEmpty) {
+        throw const PlacesException(
+          'No internet connection. Check your connection and try again.',
+          isOffline: true,
+        );
+      }
       return PlacesResult(
         places: places,
         // Firestore serves cached data when the phone is offline.
