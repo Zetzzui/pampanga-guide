@@ -287,12 +287,12 @@ class _PlaceCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            place.phrase,
+                            place.phrase.kapampangan,
                             style: AppText.h3.copyWith(color: AppColors.navy),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            place.pronunciation,
+                            place.phrase.syllables,
                             style: AppText.small.copyWith(
                               color: AppColors.muted,
                             ),

@@ -68,17 +68,17 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    place.phrase,
+                    place.phrase.kapampangan,
                     style: AppText.h2.copyWith(color: AppColors.navy),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    place.pronunciation,
+                    place.phrase.syllables,
                     style: AppText.small.copyWith(color: AppColors.muted),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    place.meaning,
+                    place.phrase.english,
                     style: AppText.body.copyWith(color: AppColors.grey),
                   ),
                   const SizedBox(height: 12),

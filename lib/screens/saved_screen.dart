@@ -129,7 +129,7 @@ class _SavedCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      place.phrase,
+                      place.phrase.kapampangan,
                       style: AppText.small.copyWith(
                         color: AppColors.grey,
                         fontWeight: FontWeight.w600,
