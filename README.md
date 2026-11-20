@@ -16,6 +16,9 @@ A mobile app for a student research project. It recommends local places in Pampa
 - Dart: the programming language for the features and functions.
 - Firebase Firestore: stores tourist spots, Kapampangan words and phrases, and user information.
 - Firebase Authentication: manages user accounts and secures login.
+- Google Maps: identifies the user's location and supports recommendations of nearby tourist spots and places in Pampanga.
+- Figma: designs the layout, interface, and visual elements.
+- Canva: creates images, icons, and other visual designs for the app.
 
 ## Workflow
 
