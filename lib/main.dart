@@ -1,8 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'screens/splash_screen.dart';
+import 'services/auth_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Start Firebase. If it is not set up yet, the app still runs in guest mode.
+  await AuthService.instance.init();
   runApp(const LocalingoApp());
 }
 

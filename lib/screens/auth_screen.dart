@@ -3,11 +3,12 @@ import 'package:material_ui/material_ui.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
 import '../widgets/ui_kit.dart';
+import '../services/auth_service.dart';
 import 'location_permission_screen.dart';
 
 /// Sign Up / Log In — placed before Location Permission per AGENTS.md.
 ///
-/// UI only for now. Firebase Authentication is wired in a later step.
+/// Uses Firebase Authentication through AuthService (email + password).
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key, this.startOnLogin = false});
 
@@ -24,6 +25,12 @@ class _AuthScreenState extends State<AuthScreen> {
   final _passwordController = TextEditingController();
   bool _obscure = true;
 
+  /// True while waiting for Firebase. Disables the buttons.
+  bool _loading = false;
+
+  /// Error shown above the main button, or null when there is none.
+  String? _error;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -32,8 +39,85 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _continue() {
-    // TODO: replace with FirebaseAuth sign up / log in.
+  /// Switches between Sign Up and Log In and clears any old error.
+  void _setMode(bool isLogin) {
+    setState(() {
+      _isLogin = isLogin;
+      _error = null;
+    });
+  }
+
+  /// Checks the form before calling Firebase. Returns an error or null.
+  String? _validate() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (!_isLogin && _nameController.text.trim().isEmpty) {
+      return 'Please enter your name.';
+    }
+    if (email.isEmpty || !email.contains('@')) {
+      return 'Please enter a valid email address.';
+    }
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters.';
+    }
+    return null;
+  }
+
+  /// Sign up or log in with Firebase, then go to Location Permission.
+  Future<void> _submit() async {
+    final problem = _validate();
+    if (problem != null) {
+      setState(() => _error = problem);
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      if (_isLogin) {
+        await AuthService.instance.logIn(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+      } else {
+        await AuthService.instance.signUp(
+          name: _nameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+      }
+      if (!mounted) return;
+      _goNext();
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  /// Sends a reset email to the address typed in the Email field.
+  Future<void> _resetPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _error = 'Type your email above, then tap Forgot password.');
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await AuthService.instance.sendPasswordReset(email);
+      messenger.showSnackBar(
+        SnackBar(content: Text('Reset link sent to $email.')),
+      );
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    }
+  }
+
+  void _goNext() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const LocationPermissionScreen()),
     );
@@ -70,7 +154,7 @@ class _AuthScreenState extends State<AuthScreen> {
             const SizedBox(height: 24),
             _SegmentToggle(
               isLogin: _isLogin,
-              onChanged: (value) => setState(() => _isLogin = value),
+              onChanged: _setMode,
             ),
             const SizedBox(height: 22),
             if (!_isLogin) ...[
@@ -115,13 +199,7 @@ class _AuthScreenState extends State<AuthScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Password reset comes in a later step.'),
-                      ),
-                    );
-                  },
+                  onPressed: _loading ? null : _resetPassword,
                   child: Text(
                     'Forgot password?',
                     style: AppText.small.copyWith(color: AppColors.navy),
@@ -129,11 +207,23 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
             ],
+            // Error state: friendly message from validation or Firebase.
+            if (_error != null) ...[
+              const SizedBox(height: 16),
+              _ErrorBanner(message: _error!),
+            ],
             const SizedBox(height: 20),
-            PrimaryButton(
-              label: _isLogin ? 'Log in' : 'Create account',
-              onPressed: _continue,
-            ),
+            // Loading state: spinner replaces the button while waiting.
+            if (_loading)
+              const SizedBox(
+                height: 52,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else
+              PrimaryButton(
+                label: _isLogin ? 'Log in' : 'Create account',
+                onPressed: _submit,
+              ),
             const SizedBox(height: 18),
             Row(
               children: [
@@ -149,7 +239,13 @@ class _AuthScreenState extends State<AuthScreen> {
               ],
             ),
             const SizedBox(height: 18),
-            SecondaryButton(label: 'Continue as guest', onPressed: _continue),
+            SecondaryButton(
+              label: 'Continue as guest',
+              // Guests skip Firebase and can still browse and learn.
+              onPressed: () {
+                if (!_loading) _goNext();
+              },
+            ),
             const SizedBox(height: 22),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -159,7 +255,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   style: AppText.small.copyWith(color: AppColors.grey),
                 ),
                 GestureDetector(
-                  onTap: () => setState(() => _isLogin = !_isLogin),
+                  onTap: () => _setMode(!_isLogin),
                   child: Text(
                     _isLogin ? 'Create an account' : 'Log in',
                     style: AppText.small.copyWith(
@@ -309,6 +405,41 @@ class _TextField extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.navy),
+        ),
+      ),
+    );
+  }
+}
+
+/// Red message box for sign up / log in errors.
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFDECEC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE5A3A3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline, size: 20, color: Color(0xFFB3261E)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                // Dark red on light pink passes WCAG AA contrast.
+                style: const TextStyle(fontSize: 13, color: Color(0xFF8C1D18)),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,0 +1,122 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+/// All Firebase Authentication calls live here, not inside screens.
+///
+/// Screens call these methods and show [AuthException.message] on failure.
+class AuthService {
+  AuthService._();
+
+  static final instance = AuthService._();
+
+  /// True once Firebase has started. False if google-services.json is
+  /// missing or Firebase failed to start, so the app can still run as guest.
+  bool _ready = false;
+  bool get isReady => _ready;
+
+  /// Call once in main() before runApp().
+  Future<void> init() async {
+    try {
+      await Firebase.initializeApp();
+      _ready = true;
+    } catch (_) {
+      // Firebase is not set up on this device yet. Guest mode still works.
+      _ready = false;
+    }
+  }
+
+  FirebaseAuth get _auth => FirebaseAuth.instance;
+
+  /// The logged-in user, or null for guests.
+  User? get currentUser => _ready ? _auth.currentUser : null;
+
+  /// Creates an account and stores the name as the display name.
+  // TODO: create the users/{uid} Firestore document in the Firestore step.
+  Future<void> signUp({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    _requireReady();
+    try {
+      final result = await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+      if (name.trim().isNotEmpty) {
+        await result.user?.updateDisplayName(name.trim());
+      }
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageFor(e.code));
+    }
+  }
+
+  /// Logs in with email and password.
+  Future<void> logIn({required String email, required String password}) async {
+    _requireReady();
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageFor(e.code));
+    }
+  }
+
+  /// Sends a password reset email.
+  Future<void> sendPasswordReset(String email) async {
+    _requireReady();
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(_messageFor(e.code));
+    }
+  }
+
+  Future<void> logOut() async {
+    if (_ready) await _auth.signOut();
+  }
+
+  void _requireReady() {
+    if (!_ready) {
+      throw const AuthException(
+        'Accounts are not available right now. You can continue as a guest.',
+      );
+    }
+  }
+
+  /// Turns Firebase error codes into short, friendly messages.
+  String _messageFor(String code) {
+    switch (code) {
+      case 'invalid-email':
+        return 'That email address does not look right.';
+      case 'email-already-in-use':
+        return 'An account with this email already exists. Try logging in.';
+      case 'weak-password':
+        return 'Use a stronger password (at least 8 characters).';
+      case 'user-not-found':
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'Email or password is incorrect.';
+      case 'user-disabled':
+        return 'This account has been disabled.';
+      case 'too-many-requests':
+        return 'Too many tries. Please wait a moment and try again.';
+      case 'network-request-failed':
+        return 'You seem to be offline. Check your connection and try again.';
+      default:
+        return 'Something went wrong. Please try again.';
+    }
+  }
+}
+
+/// A friendly error a screen can show directly to the user.
+class AuthException implements Exception {
+  const AuthException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}

@@ -47,3 +47,10 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// Firebase: only apply when google-services.json is present, so the app
+// still builds (in guest mode) before Firebase is set up.
+// google-services.json is git-ignored and must never be committed.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}

@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 
+import '../services/auth_service.dart';
 import 'onboarding_screen.dart';
+import 'places_screen.dart';
 
 /// Brand colours for the splash screen.
 /// Keep them here until the full design-token set is added.
@@ -58,9 +60,14 @@ class _SplashScreenState extends State<SplashScreen> {
     _openOnboarding();
   }
 
+  /// Logged-in users go straight to Places. Everyone else sees Onboarding.
   void _openOnboarding() {
+    final loggedIn = AuthService.instance.currentUser != null;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      MaterialPageRoute(
+        builder: (_) =>
+            loggedIn ? const PlacesScreen() : const OnboardingScreen(),
+      ),
     );
   }
 
