@@ -1,160 +1,187 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../data/mock_data.dart';
+import '../state/saved_store.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text.dart';
+import '../widgets/place_card.dart';
+import '../widgets/ui_kit.dart';
+import 'main_shell.dart';
 import 'restaurant_detail_screen.dart';
 
-/// Saved — places the user bookmarked, with an empty state.
-class SavedScreen extends StatefulWidget {
+/// Saved tab (Figma: "Saved places" frames).
+///
+/// Shows starred places, or the empty state when there are none.
+/// Tapping a filled star removes the place (workflow.md: Save a Favorite).
+class SavedScreen extends StatelessWidget {
   const SavedScreen({super.key});
 
-  @override
-  State<SavedScreen> createState() => _SavedScreenState();
-}
-
-class _SavedScreenState extends State<SavedScreen> {
-  // TODO: replace with the user's saved spots from Firestore.
-  final List<Place> _saved = [mockPlaces.first];
+  void _openPlace(BuildContext context, Place place) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => RestaurantDetailScreen(place: place)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
+    final store = SavedStore.instance;
     // The bottom nav lives in MainShell, so it stays still between tabs.
     return Scaffold(
-      backgroundColor: AppPalette.of(context).background,
+      backgroundColor: c.background,
       body: SafeArea(
         bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-          children: [
-            Text(
-              'YOUR FOOD TRAIL',
-              style: AppText.label.copyWith(color: AppPalette.of(context).muted),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Saved places',
-              style: AppText.h1.copyWith(color: AppPalette.of(context).ink),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Keep the tables you want to come back to.',
-              style: AppText.body.copyWith(color: AppPalette.of(context).muted),
-            ),
-            const SizedBox(height: 24),
-            if (_saved.isEmpty)
-              _EmptyState()
-            else
-              ..._saved.map(
-                (place) => _SavedCard(
-                  place: place,
-                  onOpen: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => RestaurantDetailScreen(place: place),
-                      ),
-                    );
-                  },
-                  onRemove: () => setState(() => _saved.remove(place)),
+        // Rebuild when a place is starred or unstarred on any screen.
+        child: ListenableBuilder(
+          listenable: store,
+          builder: (context, _) {
+            final saved = store.places;
+            if (saved.isEmpty) return const _EmptySaved();
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+              children: [
+                const _Heading(label: 'READY FOR YOUR NEXT FOOD TRIP'),
+                const SizedBox(height: 4),
+                Text(
+                  'Your favorites  ·  Available offline',
+                  style: AppText.small.copyWith(fontSize: 13, color: c.muted),
                 ),
-              ),
-          ],
+                const SizedBox(height: 16),
+                ...saved.map(
+                  (place) => PlaceCard(
+                    place: place,
+                    onTap: () => _openPlace(context, place),
+                  ),
+                ),
+                const _PhraseTip(),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _SavedCard extends StatelessWidget {
-  const _SavedCard({
-    required this.place,
-    required this.onOpen,
-    required this.onRemove,
-  });
+/// Small label plus the "Saved places" title.
+class _Heading extends StatelessWidget {
+  const _Heading({required this.label});
 
-  final Place place;
-  final VoidCallback onOpen;
-  final VoidCallback onRemove;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppPalette.of(context).surface,
-        border: Border.all(color: AppPalette.of(context).line),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: onOpen,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
+    final c = AppPalette.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          // Accent is too dim on the dark background, so use ink there.
+          style: AppText.label.copyWith(color: dark ? c.ink : c.accent),
+        ),
+        const SizedBox(height: 4),
+        Text('Saved places', style: AppText.h1.copyWith(color: c.ink)),
+      ],
+    );
+  }
+}
+
+/// Figma empty frame: star circle, "Your favorites start here.", button.
+class _EmptySaved extends StatelessWidget {
+  const _EmptySaved();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _Heading(label: 'YOUR LITTLE LOCAL LIST'),
+          Expanded(
+            child: Center(
+              child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      place.name,
-                      style: AppText.h3.copyWith(color: AppPalette.of(context).ink),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${place.city} · Pampanga',
-                      style: AppText.small.copyWith(color: AppPalette.of(context).muted),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      place.phrase.kapampangan,
-                      style: AppText.small.copyWith(
-                        color: AppPalette.of(context).muted,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: c.soft,
+                        shape: BoxShape.circle,
                       ),
+                      child: Icon(Icons.star_border, size: 28, color: c.ink),
+                    ),
+                    const SizedBox(height: 28),
+                    Text(
+                      'Your favorites\nstart here.',
+                      textAlign: TextAlign.center,
+                      style: AppText.h2.copyWith(
+                        fontSize: 26,
+                        height: 1.35,
+                        color: c.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Tap the star on any restaurant to keep it close '
+                      'for your next food trip.',
+                      textAlign: TextAlign.center,
+                      style: AppText.body.copyWith(fontSize: 15, color: c.muted),
+                    ),
+                    const SizedBox(height: 22),
+                    // workflow.md: Empty State -> "Browse Places" -> Places.
+                    PrimaryButton(
+                      label: 'Discover local places',
+                      onPressed: () =>
+                          MainShell.goTo(context, MainShell.places),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: onRemove,
-                tooltip: 'Remove',
-                icon: Icon(
-                  Icons.bookmark,
-                  color: AppPalette.of(context).ink,
-                  size: 22,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _EmptyState extends StatelessWidget {
+/// Figma tip box under the saved list.
+class _PhraseTip extends StatelessWidget {
+  const _PhraseTip();
+
   @override
   Widget build(BuildContext context) {
+    final c = AppPalette.of(context);
     return Container(
-      padding: const EdgeInsets.all(24),
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       decoration: BoxDecoration(
-        color: AppPalette.of(context).soft,
-        borderRadius: BorderRadius.circular(12),
+        color: c.soft,
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.bookmark_border, size: 34, color: AppPalette.of(context).ink),
-          const SizedBox(height: 12),
           Text(
-            'Nothing saved yet',
-            style: AppText.h3.copyWith(color: AppPalette.of(context).ink),
+            'Good food, good words.',
+            style: AppText.body.copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: c.ink,
+            ),
           ),
           const SizedBox(height: 6),
+          // TODO: verify "Dakal a salamat" with a Kapampangan speaker.
           Text(
-            'Tap the bookmark on a place to keep it here.',
-            textAlign: TextAlign.center,
-            style: AppText.small.copyWith(color: AppPalette.of(context).muted),
+            'Try saying “Dakal a salamat” — thank you very much — '
+            'before you leave.',
+            style: AppText.body.copyWith(fontSize: 13, color: c.muted),
           ),
         ],
       ),
